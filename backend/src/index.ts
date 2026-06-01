@@ -20,29 +20,51 @@ if (!process.env.DATABASE_URL) {
   }
 }
 
-// Initialize database and start server
-async function startServer() {
-  try {
+// Initialize database
+let dbInitialized = false;
+async function ensureDatabaseInitialized() {
+  if (!dbInitialized) {
     await initializeDatabase();
+    dbInitialized = true;
+  }
+}
 
-    // Routes
-    app.use('/api', routes);
+// Initialize database and setup routes
+ensureDatabaseInitialized().then(() => {
+  // Routes
+  app.use('/api', routes);
 
-    // Health check
-    app.get('/health', (req, res) => {
-      res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  // Health check
+  app.get('/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
+  // Root endpoint
+  app.get('/', (req, res) => {
+    res.json({
+      message: 'Voice-over Workflow API',
+      status: 'running',
+      endpoints: {
+        health: '/health',
+        api: '/api'
+      }
     });
+  });
+});
 
-    // Start server
+// Only start server if not in Vercel environment
+if (process.env.VERCEL !== '1') {
+  ensureDatabaseInitialized().then(() => {
     app.listen(PORT, () => {
       console.log(`\n✓ Server running on http://localhost:${PORT}`);
       console.log(`✓ API available at http://localhost:${PORT}/api`);
       console.log(`✓ Health check at http://localhost:${PORT}/health\n`);
     });
-  } catch (error) {
+  }).catch((error) => {
     console.error('Failed to start server:', error);
     process.exit(1);
-  }
+  });
 }
 
-startServer();
+// Export for Vercel serverless
+export default app;
