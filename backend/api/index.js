@@ -1,16 +1,12 @@
-// Load environment variables (for local development)
-import dotenv from 'dotenv';
-import path from 'path';
+// Vercel serverless entry point (plain JavaScript - no TypeScript compilation needed)
+const express = require('express');
+const cors = require('cors');
 
-// Load from backend/.env file (for local development only)
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+// Import database config
+const { initializeDatabase } = require('../dist/config/db-config');
 
-import express from 'express';
-import cors from 'cors';
-import { initializeDatabase } from '@config/db-config';
-import routes from '@routes/index';
-import path from 'path';
-import fs from 'fs';
+// Import routes
+const routes = require('../dist/routes/index').default;
 
 const app = express();
 
@@ -18,15 +14,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Ensure data directory exists (only for SQLite/local development)
-if (!process.env.DATABASE_URL) {
-  const dataDir = path.join(__dirname, '../data');
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
-}
-
-// Initialize database once
+// Initialize database
 let dbInitialized = false;
 const dbInitPromise = (async () => {
   if (!dbInitialized) {
@@ -61,4 +49,4 @@ app.get('/', (req, res) => {
   });
 });
 
-export default app;
+module.exports = app;

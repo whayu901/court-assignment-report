@@ -1,12 +1,13 @@
 // Database configuration - automatically selects SQLite or PostgreSQL based on environment
 
-const USE_POSTGRES = process.env.DATABASE_URL !== undefined;
-
-export { USE_POSTGRES };
+// Check DATABASE_URL lazily (when function is called, not at module load time)
+function usePostgres() {
+  return process.env.DATABASE_URL !== undefined;
+}
 
 // Export the appropriate database module
 export async function initializeDatabase() {
-  if (USE_POSTGRES) {
+  if (usePostgres()) {
     console.log('Using PostgreSQL (Neon)');
     const { initializeDatabase: initPostgres } = await import('./database-postgres');
     return initPostgres();
@@ -19,7 +20,7 @@ export async function initializeDatabase() {
 
 // Export repository factories
 export async function createJobRepository() {
-  if (USE_POSTGRES) {
+  if (usePostgres()) {
     const { JobRepository } = await import('@repositories/JobRepository-postgres');
     return new JobRepository();
   } else {
@@ -29,7 +30,7 @@ export async function createJobRepository() {
 }
 
 export async function createReporterRepository() {
-  if (USE_POSTGRES) {
+  if (usePostgres()) {
     const { ReporterRepository } = await import('@repositories/ReporterRepository-postgres');
     return new ReporterRepository();
   } else {
@@ -39,7 +40,7 @@ export async function createReporterRepository() {
 }
 
 export async function createEditorRepository() {
-  if (USE_POSTGRES) {
+  if (usePostgres()) {
     const { EditorRepository } = await import('@repositories/EditorRepository-postgres');
     return new EditorRepository();
   } else {
