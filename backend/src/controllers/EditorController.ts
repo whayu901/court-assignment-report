@@ -7,7 +7,7 @@ export class EditorController {
 
   getAllEditors = async (req: Request, res: Response) => {
     try {
-      const editors = this.editorService.getAllEditors();
+      const editors = await this.editorService.getAllEditors();
       res.json(editors);
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch editors' });
@@ -17,7 +17,7 @@ export class EditorController {
   getEditorById = async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
-      const editor = this.editorService.getEditorById(id);
+      const editor = await this.editorService.getEditorById(id);
       res.json(editor);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to fetch editor';
@@ -28,7 +28,7 @@ export class EditorController {
   createEditor = async (req: Request, res: Response) => {
     try {
       const { name, flatFeePerJob } = req.body as CreateEditorRequest;
-      const editor = this.editorService.createEditor(name, flatFeePerJob);
+      const editor = await this.editorService.createEditor(name, flatFeePerJob);
       res.status(201).json(editor);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to create editor';
@@ -40,7 +40,7 @@ export class EditorController {
     try {
       const id = parseInt(req.params.id);
       const { isAvailable } = req.body;
-      const editor = this.editorService.updateAvailability(id, isAvailable);
+      const editor = await this.editorService.updateAvailability(id, isAvailable);
       res.json(editor);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to update availability';

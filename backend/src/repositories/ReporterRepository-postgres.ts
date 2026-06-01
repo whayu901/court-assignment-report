@@ -1,5 +1,5 @@
-import { sql } from '../config/database-postgres';
-import { Reporter } from '@shared/types';
+import { sql } from "../config/database-postgres";
+import { Reporter } from "@shared/types";
 
 export class ReporterRepository {
   async findAll(): Promise<Reporter[]> {
@@ -25,7 +25,11 @@ export class ReporterRepository {
     return rows.map(this.mapRowToReporter);
   }
 
-  async create(name: string, location: string, ratePerMinute: number): Promise<Reporter> {
+  async create(
+    name: string,
+    location: string,
+    ratePerMinute: number,
+  ): Promise<Reporter> {
     const rows = await sql`
       INSERT INTO reporters (name, location, rate_per_minute)
       VALUES (${name}, ${location}, ${ratePerMinute})
@@ -40,7 +44,7 @@ export class ReporterRepository {
       UPDATE reporters SET is_available = ${isAvailable} WHERE id = ${id}
     `;
 
-    return result.count > 0;
+    return result.length > 0;
   }
 
   private mapRowToReporter(row: any): Reporter {

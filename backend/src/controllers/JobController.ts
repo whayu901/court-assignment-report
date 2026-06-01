@@ -12,7 +12,7 @@ export class JobController {
 
   getAllJobs = async (req: Request, res: Response) => {
     try {
-      const jobs = this.jobService.getAllJobs();
+      const jobs = await this.jobService.getAllJobs();
       res.json(jobs);
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch jobs' });
@@ -22,7 +22,7 @@ export class JobController {
   getJobById = async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
-      const job = this.jobService.getJobById(id);
+      const job = await this.jobService.getJobById(id);
       res.json(job);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to fetch job';
@@ -33,7 +33,7 @@ export class JobController {
   createJob = async (req: Request, res: Response) => {
     try {
       const { caseName, duration, location } = req.body as CreateJobRequest;
-      const job = this.jobService.createJob(caseName, duration, location);
+      const job = await this.jobService.createJob(caseName, duration, location);
       res.status(201).json(job);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to create job';
@@ -45,7 +45,7 @@ export class JobController {
     try {
       const id = parseInt(req.params.id);
       const { status } = req.body as UpdateJobStatusRequest;
-      const job = this.jobService.updateJobStatus(id, status);
+      const job = await this.jobService.updateJobStatus(id, status);
       res.json(job);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to update job status';
@@ -57,7 +57,7 @@ export class JobController {
     try {
       const jobId = parseInt(req.params.id);
       const { reporterId } = req.body as AssignReporterRequest;
-      const job = this.jobService.assignReporter(jobId, reporterId);
+      const job = await this.jobService.assignReporter(jobId, reporterId);
       res.json(job);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to assign reporter';
@@ -68,7 +68,7 @@ export class JobController {
   getSuggestedReporters = async (req: Request, res: Response) => {
     try {
       const jobId = parseInt(req.params.id);
-      const suggestions = this.jobService.getSuggestedReporters(jobId);
+      const suggestions = await this.jobService.getSuggestedReporters(jobId);
       res.json(suggestions);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to get suggestions';
@@ -80,7 +80,7 @@ export class JobController {
     try {
       const jobId = parseInt(req.params.id);
       const { editorId } = req.body as AssignEditorRequest;
-      const job = this.jobService.assignEditor(jobId, editorId);
+      const job = await this.jobService.assignEditor(jobId, editorId);
       res.json(job);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to assign editor';
@@ -91,7 +91,7 @@ export class JobController {
   getPayment = async (req: Request, res: Response) => {
     try {
       const jobId = parseInt(req.params.id);
-      const payment = this.jobService.calculatePayment(jobId);
+      const payment = await this.jobService.calculatePayment(jobId);
       res.json(payment);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to calculate payment';

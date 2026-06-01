@@ -7,7 +7,7 @@ export class ReporterController {
 
   getAllReporters = async (req: Request, res: Response) => {
     try {
-      const reporters = this.reporterService.getAllReporters();
+      const reporters = await this.reporterService.getAllReporters();
       res.json(reporters);
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch reporters' });
@@ -17,7 +17,7 @@ export class ReporterController {
   getReporterById = async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
-      const reporter = this.reporterService.getReporterById(id);
+      const reporter = await this.reporterService.getReporterById(id);
       res.json(reporter);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to fetch reporter';
@@ -28,7 +28,7 @@ export class ReporterController {
   createReporter = async (req: Request, res: Response) => {
     try {
       const { name, location, ratePerMinute } = req.body as CreateReporterRequest;
-      const reporter = this.reporterService.createReporter(name, location, ratePerMinute);
+      const reporter = await this.reporterService.createReporter(name, location, ratePerMinute);
       res.status(201).json(reporter);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to create reporter';
@@ -40,7 +40,7 @@ export class ReporterController {
     try {
       const id = parseInt(req.params.id);
       const { isAvailable } = req.body;
-      const reporter = this.reporterService.updateAvailability(id, isAvailable);
+      const reporter = await this.reporterService.updateAvailability(id, isAvailable);
       res.json(reporter);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to update availability';

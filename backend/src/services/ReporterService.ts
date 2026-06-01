@@ -4,17 +4,17 @@ import { Reporter } from '@shared/types';
 export class ReporterService {
   private reporterRepo = new ReporterRepository();
 
-  getAllReporters(): Reporter[] {
+  async getAllReporters(): Promise<Reporter[]> {
     return this.reporterRepo.findAll();
   }
 
-  getReporterById(id: number): Reporter {
-    const reporter = this.reporterRepo.findById(id);
+  async getReporterById(id: number): Promise<Reporter> {
+    const reporter = await this.reporterRepo.findById(id);
     if (!reporter) throw new Error('Reporter not found');
     return reporter;
   }
 
-  createReporter(name: string, location: string, ratePerMinute: number): Reporter {
+  async createReporter(name: string, location: string, ratePerMinute: number): Promise<Reporter> {
     if (!name || name.trim() === '') {
       throw new Error('Name is required');
     }
@@ -28,9 +28,9 @@ export class ReporterService {
     return this.reporterRepo.create(name, location, ratePerMinute);
   }
 
-  updateAvailability(id: number, isAvailable: boolean): Reporter {
-    this.getReporterById(id); // Ensure reporter exists
-    this.reporterRepo.updateAvailability(id, isAvailable);
+  async updateAvailability(id: number, isAvailable: boolean): Promise<Reporter> {
+    await this.getReporterById(id); // Ensure reporter exists
+    await this.reporterRepo.updateAvailability(id, isAvailable);
     return this.getReporterById(id);
   }
 }

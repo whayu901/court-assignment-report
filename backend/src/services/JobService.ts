@@ -8,17 +8,17 @@ export class JobService {
   private reporterRepo = new ReporterRepository();
   private editorRepo = new EditorRepository();
 
-  getAllJobs(): Job[] {
+  async getAllJobs(): Promise<Job[]> {
     return this.jobRepo.findAll();
   }
 
-  getJobById(id: number): Job {
-    const job = this.jobRepo.findById(id);
+  async getJobById(id: number): Promise<Job> {
+    const job = await this.jobRepo.findById(id);
     if (!job) throw new Error('Job not found');
     return job;
   }
 
-  createJob(caseName: string, duration: number, location: string): Job {
+  async createJob(caseName: string, duration: number, location: string): Promise<Job> {
     if (!caseName || caseName.trim() === '') {
       throw new Error('Case name is required');
     }
@@ -33,8 +33,8 @@ export class JobService {
   }
 
   // State machine: validate and transition job status
-  updateJobStatus(id: number, newStatus: JobStatus): Job {
-    const job = this.getJobById(id);
+  async updateJobStatus(id: number, newStatus: JobStatus): Promise<Job> {
+    const job = await this.getJobById(id);
     const validNextStates = VALID_TRANSITIONS[job.status];
 
     if (!validNextStates.includes(newStatus)) {
@@ -53,14 +53,14 @@ export class JobService {
       throw new Error('Cannot mark as reviewed without assigned editor');
     }
 
-    this.jobRepo.updateStatus(id, newStatus);
+    await this.jobRepo.updateStatus(id, newStatus);
     return this.getJobById(id);
   }
 
   // Smart assignment: prefer reporters from the same location
-  assignReporter(jobId: number, reporterId: number): Job {
-    const job = this.getJobById(jobId);
-    const reporter = this.reporterRepo.findById(reporterId);
+  async assignReporter(jobId: number, reporterId: number): Promise<Job> {
+    const job = await this.getJobById(jobId);
+    const reporter = await this.reporterRepo.findById(reporterId);
 
     if (!reporter) {
       throw new Error('Reporter not found');
@@ -74,17 +74,16 @@ export class JobService {
       throw new Error('Can only assign reporter to jobs with NEW status');
     }
 
-    this.jobRepo.assignReporter(jobId, reporterId);
+    await this.jobRepo.assignReporter(jobId, reporterId);
     return this.getJobById(jobId);
   }
 
   // Get suggested reporters (same location first, then others)
-  getSuggestedReporters(jobId: number) {
-    const job = this.getJobById(jobId);
-    const sameLocationReporters = this.reporterRepo.findAvailableByLocation(job.location);
-    const otherReporters = this.reporterRepo
-      .findAllAvailable()
-      .filter(r => r.location !== job.location);
+  async getSuggestedReporters(jobId: number) {
+    const job = await this.getJobById(jobId);
+    const sameLocationReporters = await this.reporterRepo.findAvailableByLocation(job.location);
+    const allAvailableReporters = await this.reporterRepo.findAllAvailable();
+    const otherReporters = allAvailableReporters.filter(r => r.location !== job.location);
 
     return {
       preferred: sameLocationReporters,
@@ -92,9 +91,9 @@ export class JobService {
     };
   }
 
-  assignEditor(jobId: number, editorId: number): Job {
-    const job = this.getJobById(jobId);
-    const editor = this.editorRepo.findById(editorId);
+  async assignEditor(jobId: number, editorId: number): Promise<Job> {
+    const job = await this.getJobById(jobId);
+    const editor = await this.editorRepo.findById(editorId);
 
     if (!editor) {
       throw new Error('Editor not found');
@@ -108,25 +107,25 @@ export class JobService {
       throw new Error('Can only assign editor to transcribed jobs');
     }
 
-    this.jobRepo.assignEditor(jobId, editorId);
+    await this.jobRepo.assignEditor(jobId, editorId);
     return this.getJobById(jobId);
   }
 
   // Calculate payment for a job
-  calculatePayment(jobId: number): Payment {
-    const job = this.getJobById(jobId);
+  async calculatePayment(jobId: number): Promise<Payment> {
+    const job = await this.getJobById(jobId);
     let reporterPayment: number | undefined;
     let editorPayment: number | undefined;
 
     if (job.reporterId) {
-      const reporter = this.reporterRepo.findById(job.reporterId);
+      const reporter = await this.reporterRepo.findById(job.reporterId);
       if (reporter) {
         reporterPayment = job.duration * reporter.ratePerMinute;
       }
     }
 
     if (job.editorId) {
-      const editor = this.editorRepo.findById(job.editorId);
+      const editor = await this.editorRepo.findById(job.editorId);
       if (editor) {
         editorPayment = editor.flatFeePerJob;
       }

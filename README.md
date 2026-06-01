@@ -276,6 +276,90 @@ npm start
 
 Serve the frontend static files using nginx or similar.
 
+## Deploying to Vercel
+
+This application is ready to deploy to Vercel with a PostgreSQL database (Neon).
+
+### Database Setup
+
+1. **Create a Neon Database** (recommended for Vercel):
+   - Go to [Neon Console](https://console.neon.tech/)
+   - Create a new project
+   - Copy the connection string
+
+2. **Alternative: Use Vercel Postgres**:
+   - In your Vercel project dashboard, go to Storage
+   - Create a Postgres database
+   - Copy the `DATABASE_URL` from the connection details
+
+### Backend Deployment
+
+1. **Push your code to GitHub** (if not already done):
+   ```bash
+   git add .
+   git commit -m "Add Vercel deployment support"
+   git push origin main
+   ```
+
+2. **Deploy to Vercel**:
+   - Go to [Vercel Dashboard](https://vercel.com/dashboard)
+   - Click "Add New Project"
+   - Import your GitHub repository
+   - Configure the project:
+     - **Root Directory**: `backend`
+     - **Framework Preset**: Other
+     - **Build Command**: `npm run build`
+     - **Output Directory**: `dist`
+     - **Install Command**: `npm install`
+
+3. **Set Environment Variables** in Vercel:
+   - `DATABASE_URL`: Your Neon or Vercel Postgres connection string
+   - `PORT`: 3001 (optional, defaults to 3001)
+
+4. Deploy! The backend will:
+   - Automatically detect `DATABASE_URL` and use PostgreSQL (Neon)
+   - Skip installing `better-sqlite3` (it's optional)
+   - Create database tables on first run
+   - Insert sample data if tables are empty
+
+### Frontend Deployment
+
+1. **Deploy to Vercel**:
+   - Add another project for the frontend
+   - Configure the project:
+     - **Root Directory**: `frontend`
+     - **Framework Preset**: Vite
+     - **Build Command**: `npm run build`
+     - **Output Directory**: `dist`
+
+2. **Set Environment Variables**:
+   - `VITE_API_URL`: Your backend Vercel URL (e.g., `https://your-backend.vercel.app`)
+
+### How It Works
+
+The application automatically switches between databases based on the `DATABASE_URL` environment variable:
+
+- **Local Development** (no `DATABASE_URL`): Uses SQLite with `better-sqlite3`
+- **Production** (with `DATABASE_URL`): Uses PostgreSQL via Neon serverless driver
+
+This is handled in `backend/src/config/db-config.ts` which dynamically imports the correct database module and repository implementations.
+
+### Troubleshooting
+
+**Build fails with better-sqlite3 errors**:
+- This is expected when `DATABASE_URL` is set
+- `better-sqlite3` is marked as optional and won't be installed in production
+- The app will use PostgreSQL instead
+
+**Database tables not created**:
+- Check Vercel function logs
+- Ensure `DATABASE_URL` is correctly set
+- The `initializeDatabase()` function runs on server startup
+
+**CORS errors**:
+- Update the CORS configuration in `backend/src/index.ts` to allow your frontend domain
+- Or use Vercel's built-in proxy features
+
 ## Future Enhancements
 
 Possible improvements for a production system:

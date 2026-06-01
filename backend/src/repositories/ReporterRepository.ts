@@ -20,17 +20,17 @@ export class ReporterRepository {
     };
   }
 
-  findAll(): Reporter[] {
+  async findAll(): Promise<Reporter[]> {
     const rows = db.prepare('SELECT * FROM reporters').all() as ReporterRow[];
     return rows.map(this.mapRowToReporter);
   }
 
-  findById(id: number): Reporter | null {
+  async findById(id: number): Promise<Reporter | null> {
     const row = db.prepare('SELECT * FROM reporters WHERE id = ?').get(id) as ReporterRow | undefined;
     return row ? this.mapRowToReporter(row) : null;
   }
 
-  findAvailableByLocation(location: string): Reporter[] {
+  async findAvailableByLocation(location: string): Promise<Reporter[]> {
     const rows = db.prepare(`
       SELECT * FROM reporters
       WHERE is_available = 1 AND location = ?
@@ -38,23 +38,23 @@ export class ReporterRepository {
     return rows.map(this.mapRowToReporter);
   }
 
-  findAllAvailable(): Reporter[] {
+  async findAllAvailable(): Promise<Reporter[]> {
     const rows = db.prepare('SELECT * FROM reporters WHERE is_available = 1').all() as ReporterRow[];
     return rows.map(this.mapRowToReporter);
   }
 
-  create(name: string, location: string, ratePerMinute: number): Reporter {
+  async create(name: string, location: string, ratePerMinute: number): Promise<Reporter> {
     const result = db.prepare(`
       INSERT INTO reporters (name, location, rate_per_minute)
       VALUES (?, ?, ?)
     `).run(name, location, ratePerMinute);
 
-    const reporter = this.findById(result.lastInsertRowid as number);
+    const reporter = await this.findById(result.lastInsertRowid as number);
     if (!reporter) throw new Error('Failed to create reporter');
     return reporter;
   }
 
-  updateAvailability(id: number, isAvailable: boolean): boolean {
+  async updateAvailability(id: number, isAvailable: boolean): Promise<boolean> {
     const result = db.prepare(`
       UPDATE reporters SET is_available = ? WHERE id = ?
     `).run(isAvailable ? 1 : 0, id);

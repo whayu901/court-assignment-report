@@ -1,5 +1,5 @@
-import { sql } from '../config/database-postgres';
-import { Job, JobStatus } from '@shared/types';
+import { sql } from "../config/database-postgres";
+import { Job, JobStatus } from "@shared/types";
 
 export class JobRepository {
   async findAll(): Promise<Job[]> {
@@ -12,7 +12,11 @@ export class JobRepository {
     return rows.length > 0 ? this.mapRowToJob(rows[0]) : null;
   }
 
-  async create(caseName: string, duration: number, location: string): Promise<Job> {
+  async create(
+    caseName: string,
+    duration: number,
+    location: string,
+  ): Promise<Job> {
     const rows = await sql`
       INSERT INTO jobs (case_name, duration, location, status)
       VALUES (${caseName}, ${duration}, ${location}, 'NEW')
@@ -29,7 +33,7 @@ export class JobRepository {
       WHERE id = ${id}
     `;
 
-    return result.count > 0;
+    return result.length > 0;
   }
 
   async assignReporter(id: number, reporterId: number): Promise<boolean> {
@@ -39,7 +43,7 @@ export class JobRepository {
       WHERE id = ${id}
     `;
 
-    return result.count > 0;
+    return result.length > 0;
   }
 
   async assignEditor(id: number, editorId: number): Promise<boolean> {
@@ -49,7 +53,7 @@ export class JobRepository {
       WHERE id = ${id}
     `;
 
-    return result.count > 0;
+    return result.length > 0;
   }
 
   private mapRowToJob(row: any): Job {

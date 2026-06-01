@@ -4,17 +4,17 @@ import { Editor } from '@shared/types';
 export class EditorService {
   private editorRepo = new EditorRepository();
 
-  getAllEditors(): Editor[] {
+  async getAllEditors(): Promise<Editor[]> {
     return this.editorRepo.findAll();
   }
 
-  getEditorById(id: number): Editor {
-    const editor = this.editorRepo.findById(id);
+  async getEditorById(id: number): Promise<Editor> {
+    const editor = await this.editorRepo.findById(id);
     if (!editor) throw new Error('Editor not found');
     return editor;
   }
 
-  createEditor(name: string, flatFeePerJob: number): Editor {
+  async createEditor(name: string, flatFeePerJob: number): Promise<Editor> {
     if (!name || name.trim() === '') {
       throw new Error('Name is required');
     }
@@ -25,9 +25,9 @@ export class EditorService {
     return this.editorRepo.create(name, flatFeePerJob);
   }
 
-  updateAvailability(id: number, isAvailable: boolean): Editor {
-    this.getEditorById(id); // Ensure editor exists
-    this.editorRepo.updateAvailability(id, isAvailable);
+  async updateAvailability(id: number, isAvailable: boolean): Promise<Editor> {
+    await this.getEditorById(id); // Ensure editor exists
+    await this.editorRepo.updateAvailability(id, isAvailable);
     return this.getEditorById(id);
   }
 }

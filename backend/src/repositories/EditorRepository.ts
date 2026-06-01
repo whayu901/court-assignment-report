@@ -18,33 +18,33 @@ export class EditorRepository {
     };
   }
 
-  findAll(): Editor[] {
+  async findAll(): Promise<Editor[]> {
     const rows = db.prepare('SELECT * FROM editors').all() as EditorRow[];
     return rows.map(this.mapRowToEditor);
   }
 
-  findById(id: number): Editor | null {
+  async findById(id: number): Promise<Editor | null> {
     const row = db.prepare('SELECT * FROM editors WHERE id = ?').get(id) as EditorRow | undefined;
     return row ? this.mapRowToEditor(row) : null;
   }
 
-  findAllAvailable(): Editor[] {
+  async findAllAvailable(): Promise<Editor[]> {
     const rows = db.prepare('SELECT * FROM editors WHERE is_available = 1').all() as EditorRow[];
     return rows.map(this.mapRowToEditor);
   }
 
-  create(name: string, flatFeePerJob: number): Editor {
+  async create(name: string, flatFeePerJob: number): Promise<Editor> {
     const result = db.prepare(`
       INSERT INTO editors (name, flat_fee_per_job)
       VALUES (?, ?)
     `).run(name, flatFeePerJob);
 
-    const editor = this.findById(result.lastInsertRowid as number);
+    const editor = await this.findById(result.lastInsertRowid as number);
     if (!editor) throw new Error('Failed to create editor');
     return editor;
   }
 
-  updateAvailability(id: number, isAvailable: boolean): boolean {
+  async updateAvailability(id: number, isAvailable: boolean): Promise<boolean> {
     const result = db.prepare(`
       UPDATE editors SET is_available = ? WHERE id = ?
     `).run(isAvailable ? 1 : 0, id);

@@ -28,28 +28,28 @@ export class JobRepository {
     };
   }
 
-  findAll(): Job[] {
+  async findAll(): Promise<Job[]> {
     const rows = db.prepare('SELECT * FROM jobs ORDER BY created_at DESC').all() as JobRow[];
     return rows.map(this.mapRowToJob);
   }
 
-  findById(id: number): Job | null {
+  async findById(id: number): Promise<Job | null> {
     const row = db.prepare('SELECT * FROM jobs WHERE id = ?').get(id) as JobRow | undefined;
     return row ? this.mapRowToJob(row) : null;
   }
 
-  create(caseName: string, duration: number, location: string): Job {
+  async create(caseName: string, duration: number, location: string): Promise<Job> {
     const result = db.prepare(`
       INSERT INTO jobs (case_name, duration, location, status)
       VALUES (?, ?, ?, 'NEW')
     `).run(caseName, duration, location);
 
-    const job = this.findById(result.lastInsertRowid as number);
+    const job = await this.findById(result.lastInsertRowid as number);
     if (!job) throw new Error('Failed to create job');
     return job;
   }
 
-  updateStatus(id: number, status: JobStatus): boolean {
+  async updateStatus(id: number, status: JobStatus): Promise<boolean> {
     const result = db.prepare(`
       UPDATE jobs
       SET status = ?, updated_at = datetime('now')
@@ -59,7 +59,7 @@ export class JobRepository {
     return result.changes > 0;
   }
 
-  assignReporter(id: number, reporterId: number): boolean {
+  async assignReporter(id: number, reporterId: number): Promise<boolean> {
     const result = db.prepare(`
       UPDATE jobs
       SET reporter_id = ?, status = 'ASSIGNED', updated_at = datetime('now')
@@ -69,7 +69,7 @@ export class JobRepository {
     return result.changes > 0;
   }
 
-  assignEditor(id: number, editorId: number): boolean {
+  async assignEditor(id: number, editorId: number): Promise<boolean> {
     const result = db.prepare(`
       UPDATE jobs
       SET editor_id = ?, updated_at = datetime('now')

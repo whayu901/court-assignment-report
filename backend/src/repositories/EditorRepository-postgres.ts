@@ -1,5 +1,5 @@
-import { sql } from '../config/database-postgres';
-import { Editor } from '@shared/types';
+import { sql } from "../config/database-postgres";
+import { Editor } from "@shared/types";
 
 export class EditorRepository {
   async findAll(): Promise<Editor[]> {
@@ -32,7 +32,7 @@ export class EditorRepository {
       UPDATE editors SET is_available = ${isAvailable} WHERE id = ${id}
     `;
 
-    return result.count > 0;
+    return result.length > 0;
   }
 
   private mapRowToEditor(row: any): Editor {
