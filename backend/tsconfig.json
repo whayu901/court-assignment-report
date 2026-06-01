@@ -21,6 +21,6 @@
       "@models/*": ["models/*"]
     }
   },
-  "include": ["src/**/*", "../shared/**/*"],
+  "include": ["src/**/*", "api/**/*", "../shared/**/*"],
   "exclude": ["node_modules", "dist"]
 }
